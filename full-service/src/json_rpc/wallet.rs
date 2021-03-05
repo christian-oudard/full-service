@@ -4,7 +4,7 @@
 
 use crate::{
     db,
-    db::account::AccountID,
+    db::{account::AccountID, txo::TxoID},
     json_rpc,
     json_rpc::{
         account_secrets::AccountSecrets,
@@ -15,11 +15,14 @@ use crate::{
         json_rpc_response::{
             format_error, JsonCommandResponse, JsonCommandResponseV2, JsonRPCResponse,
         },
+        proof::Proof,
+        txo::Txo,
         wallet_status::WalletStatus,
     },
     service::{
         account::AccountService, address::AddressService, balance::BalanceService,
-        transaction::TransactionService, transaction_log::TransactionLogService, WalletService,
+        proof::ProofService, transaction::TransactionService,
+        transaction_log::TransactionLogService, txo::TxoService, WalletService,
     },
 };
 use mc_common::logger::global_log;
@@ -419,6 +422,72 @@ where
                         .map_err(format_error)?,
                 ),
             }
+        }
+        JsonCommandRequestV2::get_all_txos_for_account { account_id } => {
+            let txos = service
+                .list_txos(&AccountID(account_id))
+                .map_err(format_error)?;
+            let txo_map: Map<String, serde_json::Value> = Map::from_iter(
+                txos.iter()
+                    .map(|t| {
+                        (
+                            t.txo.txo_id_hex.clone(),
+                            serde_json::to_value(Txo::from(t)).expect("Could not get json value"),
+                        )
+                    })
+                    .collect::<Vec<(String, serde_json::Value)>>(),
+            );
+
+            JsonCommandResponseV2::get_all_txos_for_account {
+                txo_ids: txos.iter().map(|t| t.txo.txo_id_hex.clone()).collect(),
+                txo_map,
+            }
+        }
+        JsonCommandRequestV2::get_txo { txo_id } => {
+            let result = service.get_txo(&TxoID(txo_id)).map_err(format_error)?;
+            JsonCommandResponseV2::get_txo {
+                txo: Txo::from(&result),
+            }
+        }
+        JsonCommandRequestV2::get_all_txos_for_address { address } => {
+            let txos = service
+                .get_all_txos_for_address(&address)
+                .map_err(format_error)?;
+            let txo_map: Map<String, serde_json::Value> = Map::from_iter(
+                txos.iter()
+                    .map(|t| {
+                        (
+                            t.txo.txo_id_hex.clone(),
+                            serde_json::to_value(Txo::from(t)).expect("Could not get json value"),
+                        )
+                    })
+                    .collect::<Vec<(String, serde_json::Value)>>(),
+            );
+
+            JsonCommandResponseV2::get_all_txos_for_address {
+                txo_ids: txos.iter().map(|t| t.txo.txo_id_hex.clone()).collect(),
+                txo_map,
+            }
+        }
+        JsonCommandRequestV2::get_proofs { transaction_log_id } => {
+            JsonCommandResponseV2::get_proofs {
+                proofs: service
+                    .get_proofs(&transaction_log_id)
+                    .map_err(format_error)?
+                    .iter()
+                    .map(Proof::from)
+                    .collect(),
+            }
+        }
+        JsonCommandRequestV2::verify_proof {
+            account_id,
+            txo_id,
+            proof,
+        } => {
+            let result = service
+                .verify_proof(&AccountID(account_id), &TxoID(txo_id), &proof)
+                .map_err(format_error)?;
+            JsonCommandResponseV2::verify_proof { verified: result }
         }
     };
     let response = Json(JsonRPCResponse::from(result));

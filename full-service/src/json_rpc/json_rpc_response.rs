@@ -6,7 +6,8 @@
 
 use crate::json_rpc::{
     account::Account, account_secrets::AccountSecrets, address::Address, balance::Balance,
-    transaction_log::TransactionLog, tx_proposal::TxProposal, wallet_status::WalletStatus,
+    proof::Proof, transaction_log::TransactionLog, tx_proposal::TxProposal, txo::Txo,
+    wallet_status::WalletStatus,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Map;
@@ -216,30 +217,33 @@ pub enum JsonCommandResponseV2 {
     get_balance_for_address {
         balance: Balance,
     },
-    /*
-    get_all_txos_for_address {
-    }
     get_all_txos_for_account {
         txo_ids: Vec<String>,
         txo_map: Map<String, serde_json::Value>,
     },
     get_txo {
-        txo: JsonTxo,
+        txo: Txo,
     },
-    get_transaction_object {
-        transaction: JsonTx,
-    },
-    get_txo_object {
-        txo: JsonTxOut,
-    },
-    get_block_object {
-        block: JsonBlock,
-        block_contents: JsonBlockContents,
+    get_all_txos_for_address {
+        txo_ids: Vec<String>,
+        txo_map: Map<String, serde_json::Value>,
     },
     get_proofs {
-        proofs: Vec<JsonProof>,
+        proofs: Vec<Proof>,
     },
     verify_proof {
         verified: bool,
-    },*/
+    },
+    /*
+        get_transaction_object {
+            transaction: JsonTx,
+        },
+        get_txo_object {
+            txo: JsonTxOut,
+        },
+        get_block_object {
+            block: JsonBlock,
+            block_contents: JsonBlockContents,
+        },
+    */
 }

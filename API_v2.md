@@ -1742,11 +1742,16 @@ curl -s localhost:9090/wallet \
     "proofs": [
       {
         "object": "proof",
-        "txo_id": "bbee8b70e80837fc3e10bde47f63de41768ee036263907325ef9a8d45d851f15",
-        "proof": "0a2005ba1d9d871c7fb0d5ba7df17391a1e14aad1b4aa2319c997538f8e338a670bb"
+        "txo_id": "9e0de29bfee9a391e520a0b9411a91f094a454ebc70122bdc0e36889ab59d466",
+        "txo_index": "458865",
+        "proof": "0a20faca10509c32845041e49e009ddc4e35b61e7982a11aced50493b4b8aaab7a1f"
       }
     ]
-  }
+  },
+  "error": null,
+  "jsonrpc": "2.0",
+  "id": 1,
+  "api_version": "2"
 }
 ```
 
@@ -1779,7 +1784,11 @@ curl -s localhost:9090/wallet \
   "method": "verify_proof",
   "result": {
     "verified": true
-  }
+  },
+  "error": null,
+  "jsonrpc": "2.0",
+  "id": 1,
+  "api_version": "2"
 }
 ```
 
@@ -2197,31 +2206,28 @@ Sent - Success, Recovered:
 
 | *Name* | *Type* | *Description*
 | :--- | :--- | :---
-| value_pmob | string (uint64) | Available pico MOB for this account at the current account_block_index. If the account is syncing, this value may change.
-| received_block_index | string (uint64) | Block height in which the txo was received by an account.
-| spent_block_index | string (uint64) | Block height in which the txo was spent by an account.
-| is_spent_recovered | boolean | Flag that indicates if the spent_block_index was recovered from the ledger. This value is null if the txo is unspent. If true, some information may not be available on the txo without user input. If true, the proof will be null without user input.
-| received_account_id | string | The account_id for the account which has received this TXO. This account has spend authority.
-| minted_account_i | string | The account_id for the account which minted this TXO.
-| account_status_map | hash map | A normalized hash mapping account_id to account objects. Keys include "type" and "status".
-| | key: txo_type | With respect to this account, the TXO may be "minted" or "received".
-| | key: txo_status | With respect to this account, the TXO may be "unspent", "pending", "spent", "secreted" or "orphaned". For received TXOs received as an assigned address, the lifecycle is "unspent" -> "pending" -> "spent". For outbound, minted TXOs, we cannot monitor its received lifecycle status with respect to the minting account, we note its status as "secreted". If a TXO is received at an address unassigned (likely due to a recovered account or using the account on another client), the TXO is considered "orphaned" until its address is calculated -- in this case, there are manual ways to discover the missing assigned address for orphaned TXOs or to recover an entire account.
-
-#### More attributes
-
-| *Name* | *Type* | *Description*
-| :--- | :--- | :---
 | object | string, value is "txo" | String representing the object's type. Objects of the same type share the same value.
-| target_key | string (hex) | a cryptographic key for your txo
-| public_key | string (hex) | the public key for this txo, can be used as an identifier to find the txo in the ledger
-| e_fog_hint | string (hex) | the encrypted fog hint for this txo
-| subaddress_index | string (uint64) | The assigned subaddress index for this TXO with respect to its received account.
-| key_image (only on pending/spent) | string (hex) | a fingerprint of the txo derived from your private spend key materials, required to spend a txo
+| value_pmob | string (uint64) | Available pico MOB for this account at the current account_block_index. If the account is syncing, this value may change.
+| received_block_index | string (uint64) | Block index in which the Txo was received by an account.
+| spent_block_index | string (uint64) | Block index in which the Txo was spent by an account.
+| is_spent_recovered | boolean | Flag that indicates if the spent_block_index was recovered from the ledger. This value is null if the Txo is unspent. If true, some information may not be available on the txo without user input. If true, the proof will be null without user input.
+| received_account_id | string | The account_id for the account which has received this Txo. This account has spend authority.
+| minted_account_i | string | The account_id for the account which minted this Txo.
+| account_status_map | hash map | A normalized hash mapping account_id to account objects. Keys include "type" and "status".
+| | key: txo_type | With respect to this account, the Txo may be "minted" or "received".
+| | key: txo_status | With respect to this account, the Txo may be "unspent", "pending", "spent", "secreted" or "orphaned". For received Txos received as an assigned address, the lifecycle is "unspent" -> "pending" -> "spent". For outbound, minted Txos, we cannot monitor its received lifecycle status with respect to the minting account, we note its status as "secreted". If a Txo is received at an address unassigned (likely due to a recovered account or using the account on another client), the Txo is considered "orphaned" until its address is calculated -- in this case, there are manual ways to discover the missing assigned address for orphaned Txos or to recover an entire account.
+| target_key | string (hex) | A cryptographic key for this Txo.
+| public_key | string (hex) | The public key for this Txo, can be used as an identifier to find the txo in the ledger.
+| e_fog_hint | string (hex) | The encrypted fog hint for this Txo.
+| subaddress_index | string (uint64) | The assigned subaddress index for this Txo with respect to its received account.
+| assigned_address | string (uint64) | The address corresponding to the subaddress index which was assigned as an intended sender for this Txo.
+| key_image (only on pending/spent) | string (hex) | A fingerprint of the Txo derived from your private spend key materials, required to spend a Txo
+| proof | string (hex) | A proof that the sender of the Txo can provide to verify that they participated in the construction of this Txo.
 | offset_count | int | The value to offset pagination requests. Requests will exclude all list items up to and including this object.
 
 #### Example Objects
 
-Received and Spent TXO
+Received and Spent Txo
 
 ```json
 {
@@ -2283,7 +2289,7 @@ Txo Spent from One Account to Another in the Same Wallet
 }
 ```
 
-#### API Methods Returning Transaction Log Objects
+#### API Methods Returning Txo Objects
 
 * [get_all_txos_for_account](#get-all-txos-for-a-given-account)
 * [get_txo](#get-txo-details)
@@ -2294,14 +2300,10 @@ Txo Spent from One Account to Another in the Same Wallet
 
 | *Name* | *Type* | *Description*
 | :--- | :--- | :---
-| txo_id | string | Unique identifier for the Txo.
-| proof | string | A string with a proof that can be verified to confirm that another party constructed or had knowledge of the construction of the associated Txo.
-
-#### More attributes
-
-| *Name* | *Type* | *Description*
-| :--- | :--- | :---
 | object | string, value is "proof" | String representing the object's type. Objects of the same type share the same value.
+| txo_id | string | Unique identifier for the Txo.
+| txo_index | string | The index of the Txo in the ledger.
+| proof | string | A string with a proof that can be verified to confirm that another party constructed or had knowledge of the construction of the associated Txo.
 
 #### Example Object
 
@@ -2309,6 +2311,7 @@ Txo Spent from One Account to Another in the Same Wallet
 {
   "object": "proof",
   "txo_id": "873dfb8c...",
+  "txo_index": "1276",
   "proof": "984eacd..."
 }
 ```
