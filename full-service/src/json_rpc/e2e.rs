@@ -855,15 +855,15 @@ mod e2e {
 
         // Add an account
         let body = json!({
-                    "jsonrpc": "2.0",
-                    "api_version": "2",
-                    "id": 1,
-                    "method": "create_account",
-                    "params": {
-                        "name": "Alice Main Account",
-                        "first_block_index": "0",
-                    }
-                });
+            "jsonrpc": "2.0",
+            "api_version": "2",
+            "id": 1,
+            "method": "create_account",
+            "params": {
+                "name": "Alice Main Account",
+                "first_block_index": "0",
+            }
+        });
         let res = dispatch(&client, body, &logger);
         let result = res.get("result").unwrap();
         let account_id = result
